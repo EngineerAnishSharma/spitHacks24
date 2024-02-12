@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Store {
+  id         String       @id @default(cuid())
+  name       String
+  userId     String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  billboard  BillBoard[]  @relation("StoretoBillboards")
+  Captions   Captions[]
+  categories Categories[] @relation("StoretoCategories")
+  colors     Colors[]     @relation("StoretoColors")
+  order      Order[]      @relation("StoreToOrder")
+  Products   Products[]   @relation("StoretoProducts")
+  sizes      Sizes[]      @relation("StoretoSizes")
+}
+
+model BillBoard {
+  id         String       @id @default(cuid())
+  label      String
+  ImageUrl   String
+  StoreId    String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  store      Store        @relation("StoretoBillboards", fields: [StoreId], references: [id])
+  categories Categories[] @relation("BillboardtoCategories")
+}
+
+model Categories {
+  id          String     @id @default(cuid())
+  StoreId     String
+  billboardId String
+  name        String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  store       Store      @relation("StoretoCategories", fields: [StoreId], references: [id])
+  billboard   BillBoard  @relation("BillboardtoCategories", fields: [billboardId], references: [id])
+  Products    Products[] @relation("ProducttoCategory")
+}
+
+model Sizes {
+  id        String     @id @default(cuid())
+  StoreId   String
+  name      String
+  value     String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Products  Products[] @relation("ProducttoSizes")
+  store     Store      @relation("StoretoSizes", fields: [StoreId], references: [id])
+}
+
+model Colors {
+  id        String     @id @default(cuid())
+  StoreId   String
+  name      String
+  value     String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  store     Store      @relation("StoretoColors", fields: [StoreId], references: [id])
+  Products  Products[] @relation("ProducttoColor")
+}
+
+model Products {
+  id           String      @id @default(cuid())
+  StoreId      String
+  CategoriesId String
+  sizesId      String
+  colorId      String
+  name         String
+  price        Decimal
+  Featured     Boolean     @default(false)
+  Archived     Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  Image        Image[]     @relation("ProducttoImage")
+  orderItem    OrderItem[] @relation("ProducttoOrderitem")
+  categories   Categories  @relation("ProducttoCategory", fields: [CategoriesId], references: [id])
+  store        Store       @relation("StoretoProducts", fields: [StoreId], references: [id])
+  color        Colors      @relation("ProducttoColor", fields: [colorId], references: [id])
+  size         Sizes       @relation("ProducttoSizes", fields: [sizesId], references: [id])
+}
+
+model Image {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Products @relation("ProducttoImage", fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id         String      @id @default(cuid())
+  StoreId    String
+  name       String      @default("Lorem ipsum")
+  Email      String      @default("loremipsum@random.com")
+  isPaid     Boolean     @default(false)
+  phone      String      @default("")
+  address    String      @default("")
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  store      Store       @relation("StoreToOrder", fields: [StoreId], references: [id])
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  order     Order    @relation(fields: [orderId], references: [id])
+  product   Products @relation("ProducttoOrderitem", fields: [productId], references: [id])
+}
+
+model Captions {
+  id        String   @id @default(cuid())
+  title     String
+  StoreId   String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  store     Store    @relation(fields: [StoreId], references: [id])
+}
+
+model Click {
+  id        String   @id
+  userId    String
+  productId String
+  category  String
+  number    Int      @default(1)
+  createdAt DateTime @default(now())
+}
+
+model Like {
+  id        String   @id
+  userId    String
+  productId String
+  category  String
+  createdAt DateTime @default(now())
+}
+
+model Purchase {
+  id        String   @id
+  userId    String
+  productId String
+  category  String
+  number    Int      @default(1)
+  createdAt DateTime @default(now())
+}
+
+model Reviews {
+  id        String   @id
+  productId String
+  comment   String?
+  createdAt DateTime @default(now())
+  userId    String?
+}
+
+model User {
+  id        String    @id
+  userId    String?   @unique
+  dob       DateTime?
+  createdAt DateTime  @default(now())
+  lat       Float?
+  long      Float?
+  name      String?
+  gender    String?
+}

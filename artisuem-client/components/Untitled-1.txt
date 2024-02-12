@@ -1,0 +1,23 @@
+
+model BillBoard {
+  id         String       @id @default(cuid())
+  label      String
+  ImageUrl   String
+  StoreId    String
+  store      Store        @relation("StoretoBillboards", fields: [StoreId], references: [id])
+  categories Categories[] @relation("BillboardtoCategories")
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model Categories {
+  id          String     @id @default(cuid())
+  StoreId     String
+  store       Store      @relation("StoretoCategories", fields: [StoreId], references: [id])
+  billboardId String
+  billboard   BillBoard  @relation("BillboardtoCategories", fields: [billboardId], references: [id])
+  name        String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  Products    Products[] @relation("ProducttoCategory")
+}
